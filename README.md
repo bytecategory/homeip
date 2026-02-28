@@ -187,7 +187,7 @@ mdc的由来在这里,https://github.com/bytecategory/tbk_dvr_command_injection
 回到8.8.8.8,发生了什么?  
 tcpdump -i eth0 host 8.8.4.4  
 <img
-src="https://raw.githubusercontent.com/bytecategory/homeip/frame.png"
+src="https://raw.githubusercontent.com/bytecategory/homeip/refs/heads/main/frame.png"
 id="svg2" /> 因为没有运行
 
     import socket
