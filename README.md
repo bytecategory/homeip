@@ -1,5 +1,5 @@
 ### 看我如何零元购韩国住宅IP
-
+<del>MarkDown太难了 且看html罢</del><br>
 不良林曾说:“纯净的住宅IP是实现某些特殊业务的前提,比如跨境电商,运营tiktok,解锁流媒体,薅甲骨文永久免费VPS等.”  
 其中这句话“由于住宅IP一般是以HTTP或者SOCKS代理的形式出售”就很可疑了.  
 正所谓有需求的地方,就有利益.僵尸网络控制的节点天然适合构建住宅代理,这似乎是近年来DDoS圈的一个潮流,把业务从单一的攻击,扩展到网络代理.  
@@ -202,37 +202,37 @@ id="svg2" /> 因为没有运行
 运行了build.sh,用DDoS-Attack/monitor_pps.c看了下,胖虎的pps不高.  
 tcpdump udp -n -t \| awk '{print \$2}' \| cut -d. -f1 \| uniq -c
 了一会,发现包长度大多是60和138, 和TrumpDDoS一样.鉴定完毕. 收个尾
-
-    import nmap
-    m = nmap.PortScanner()
-    a = nm.scan('8.8.4.4','1-10000')['scan']['8.8.4.4']['tcp'].keys()
-    time.sleep(114) # 这时候去curl
-    b = nm.scan('8.8.4.4','1-10000')['scan']['8.8.4.4']['tcp'].keys()
-    p = a-b
-
+```python
+import nmap
+m = nmap.PortScanner()
+a = nm.scan('8.8.4.4','1-10000')['scan']['8.8.4.4']['tcp'].keys()
+time.sleep(114) # 这时候去curl
+b = nm.scan('8.8.4.4','1-10000')['scan']['8.8.4.4']['tcp'].keys()
+p = a-b
+```
 看看p里有什么,如果是50051的话,恭喜你,8.8.4.4从今以后是你的了.  
 验证一下,curl -x
 http://47aa7fc7-3de0-4141-abca-786d8a368d41:47aa7fc7-3de0-4141-abca-786d8a368d41@8.8.4.4:50051
 -L http://ipinfo.io/ip,如果结果是8.8.4.4,大功告成,可以去开香槟了.  
 只要创建fuck.yaml
+```yaml
+listen: :11451
 
-    listen: :11451
+tls:
+  cert: /etc/hysteria/0.crt
+  key: /etc/hysteria/0.key
 
-    tls:
-      cert: /etc/hysteria/0.crt
-      key: /etc/hysteria/0.key
+auth:
+  type: password
+  password: 123456
 
-    auth:
-      type: password
-      password: 123456
-
-    outbounds:
-      - name: fuck
-        type: http
-        http:
-          url: http://47aa7fc7-3de0-4141-abca-786d8a368d41:47aa7fc7-3de0-4141-abca-786d8a368d41@8.8.4.4:50051
-          insecure: true
-
+outbounds:
+  - name: fuck
+    type: http
+    http:
+      url: http://47aa7fc7-3de0-4141-abca-786d8a368d41:47aa7fc7-3de0-4141-abca-786d8a368d41@8.8.4.4:50051
+      insecure: true
+```
 运行./hysteria-linux-amd64 server -c fuck.yaml  
 0.key和0.crt用openssl写入就行,这里不再提到.
 客户端,把hy2://123456@8.8.8.8:11451/?insecure=1导入NekoBox即可.  
@@ -408,7 +408,7 @@ firefox-esr -private-window后,也没有消防栓了,而是Google 지원 언어
 English.  
 过了两天后,什么!  
 可疑,此IP地址的行为可疑,我们建议您通过我们的API提供更多用户数据,以便更准确地分析用户质量风险.  
-**敢杀我的马!**IPQS,我可疑个D~  
+**敢杀我的马!** IPQS,我可疑个D~  
 我更准确地分析一下,找到html-error.c,把send_http_headers中的headers改成
 
     "HTTP/1.0 200\r\n"
